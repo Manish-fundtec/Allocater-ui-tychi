@@ -73,7 +73,7 @@ export type InvestorRegisterLine = {
 export function flattenRegisterLines(
   report: InvestorRegisterReport,
 ): InvestorRegisterLine[] {
-  return report.investors.flatMap((inv) => {
+  return report.investors.flatMap((inv): InvestorRegisterLine[] => {
     const base = {
       investorId: inv.investorId,
       investorCode: inv.investorCode,
