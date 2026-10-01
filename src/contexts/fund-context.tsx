@@ -22,6 +22,7 @@ type FundContextValue = {
   selectedFund: Fund | null;
   setFundId: (id: string) => void;
   loading: boolean;
+  error: string | null;
   refreshFunds: () => Promise<Fund[]>;
 };
 
@@ -33,12 +34,17 @@ export function FundProvider({ children }: { children: ReactNode }) {
   const [funds, setFunds] = useState<Fund[]>([]);
   const [fundId, setFundIdState] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const refreshFunds = useCallback(async () => {
     const res = await fetch("/api/funds");
-    if (!res.ok) throw new Error("Failed to load funds");
+    if (!res.ok) {
+      const body = (await res.json().catch(() => null)) as { error?: string } | null;
+      throw new Error(body?.error ?? "Failed to load funds");
+    }
     const data: Fund[] = await res.json();
     setFunds(data);
+    setError(null);
     return data;
   }, []);
 
@@ -57,8 +63,11 @@ export function FundProvider({ children }: { children: ReactNode }) {
             ? stored
             : data[0]?.id ?? null;
         setFundIdState(initial);
-      } catch {
-        if (!cancelled) setFunds([]);
+      } catch (e) {
+        if (!cancelled) {
+          setFunds([]);
+          setError(e instanceof Error ? e.message : "Failed to load funds");
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -85,9 +94,10 @@ export function FundProvider({ children }: { children: ReactNode }) {
       selectedFund,
       setFundId,
       loading,
+      error,
       refreshFunds,
     }),
-    [funds, fundId, selectedFund, setFundId, loading, refreshFunds],
+    [funds, fundId, selectedFund, setFundId, loading, error, refreshFunds],
   );
 
   return (

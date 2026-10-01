@@ -59,7 +59,7 @@ function statusBadge(status: string) {
 }
 
 export default function DashboardPage() {
-  const { fundId, selectedFund, loading: fundLoading } = useFund();
+  const { fundId, selectedFund, loading: fundLoading, error: fundError } = useFund();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [runs, setRuns] = useState<AllocationRun[]>([]);
   const [loading, setLoading] = useState(true);
@@ -87,8 +87,14 @@ export default function DashboardPage() {
   }, [fundId]);
 
   useEffect(() => {
-    if (!fundLoading && fundId) load();
-  }, [fundId, fundLoading, load]);
+    if (fundLoading) return;
+    if (!fundId) {
+      setLoading(false);
+      setError(fundError ?? "No fund loaded. Check the database connection on the server.");
+      return;
+    }
+    load();
+  }, [fundId, fundLoading, fundError, load]);
 
   return (
     <>

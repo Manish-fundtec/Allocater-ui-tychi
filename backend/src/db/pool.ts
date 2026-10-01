@@ -4,13 +4,38 @@ import { logger } from "../lib/logger";
 
 let pool: Pool | null = null;
 
+function poolSsl(
+  connectionString: string,
+): false | { rejectUnauthorized: false } {
+  if (process.env.DB_SSL === "false") return false;
+  let host = "localhost";
+  let sslmode = "";
+  try {
+    const url = new URL(connectionString);
+    host = url.hostname;
+    sslmode = url.searchParams.get("sslmode") ?? "";
+  } catch {
+    host = "localhost";
+  }
+  if (sslmode === "disable") return false;
+  const local = host === "localhost" || host === "127.0.0.1";
+  const remote =
+    process.env.DB_SSL === "true" ||
+    sslmode === "require" ||
+    host.includes("rds.amazonaws.com") ||
+    !local;
+  return remote ? { rejectUnauthorized: false } : false;
+}
+
 export function getPool(): Pool {
   if (!pool) {
+    const connectionString = getEnv().DATABASE_URL;
     pool = new Pool({
-      connectionString: getEnv().DATABASE_URL,
-      max: 10,
+      connectionString,
+      ssl: poolSsl(connectionString),
+      max: process.env.NODE_ENV === "production" ? 1 : 10,
       idleTimeoutMillis: 30_000,
-      connectionTimeoutMillis: 5_000,
+      connectionTimeoutMillis: 10_000,
     });
     // Idle clients can error when Postgres restarts; must not crash the process.
     pool.on("error", (err) => {

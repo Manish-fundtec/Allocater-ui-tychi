@@ -40,7 +40,7 @@ export function errorHandler(
     });
     res.status(503).json({
       error:
-        "Cannot connect to PostgreSQL. Ensure the database service is running on localhost:5432.",
+        "Cannot connect to PostgreSQL. On Vercel, set DATABASE_URL to the remote database, not localhost.",
     });
     return;
   }

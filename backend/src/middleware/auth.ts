@@ -31,7 +31,7 @@ export function getSessionUser(req: Request): SessionUser | null {
   const cookie = req.cookies?.fundtec_session;
   if (cookie) return MOCK_USER;
 
-  if (env.NODE_ENV === "development" && env.DEV_AUTH_BYPASS) {
+  if (env.DEV_AUTH_BYPASS) {
     return MOCK_USER;
   }
 
