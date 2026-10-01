@@ -34,6 +34,15 @@ export function errorHandler(
     return;
   }
 
+  const message = err instanceof Error ? err.message : "Internal server error";
+  if (/connection timeout|Connection terminated/i.test(message)) {
+    res.status(503).json({
+      error:
+        "The database did not accept a connection from Vercel. Allow port 5432 from Vercel to the RDS instance, or use a database host Vercel can reach.",
+    });
+    return;
+  }
+
   if (isDbConnectionError(err)) {
     logger.error("Database connection failed", {
       stack: err instanceof Error ? err.stack : undefined,
@@ -45,7 +54,6 @@ export function errorHandler(
     return;
   }
 
-  const message = err instanceof Error ? err.message : "Internal server error";
   if (getEnv().NODE_ENV === "development" && err instanceof Error) {
     logger.error(message, { stack: err.stack });
   } else {

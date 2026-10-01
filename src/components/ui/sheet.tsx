@@ -32,6 +32,7 @@ const SheetContent = React.forwardRef<
     <SheetOverlay />
     <DialogPrimitive.Content
       ref={ref}
+      aria-describedby={undefined}
       className={cn(
         "fixed z-50 flex h-full w-[280px] flex-col gap-4 border-r border-gray-200 bg-white p-0 shadow-lg transition ease-in-out",
         side === "left" ? "inset-y-0 left-0" : "inset-y-0 right-0",
@@ -39,6 +40,7 @@ const SheetContent = React.forwardRef<
       )}
       {...props}
     >
+      <DialogPrimitive.Title className="sr-only">Navigation</DialogPrimitive.Title>
       {children}
       <SheetClose className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-white transition-opacity hover:opacity-100">
         <X className="h-4 w-4" />
