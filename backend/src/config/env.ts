@@ -1,5 +1,16 @@
 import { z } from "zod";
 
+function databaseUrlFromParts(env: NodeJS.ProcessEnv): string | undefined {
+  const host = env.DB_HOST?.trim();
+  const user = env.DB_USER?.trim();
+  const name = env.DB_NAME?.trim();
+  if (!host || !user || !name) return undefined;
+  const port = env.DB_PORT?.trim() || "5432";
+  const password = encodeURIComponent(env.DB_PASSWORD ?? "");
+  const sslmode = env.DB_SSL === "false" ? "disable" : "require";
+  return `postgresql://${encodeURIComponent(user)}:${password}@${host}:${port}/${encodeURIComponent(name)}?sslmode=${sslmode}`;
+}
+
 const envSchema = z.object({
   PORT: z.coerce.number().default(4000),
   DATABASE_URL: z.string().min(1),
@@ -31,7 +42,17 @@ let cached: Env | null = null;
 
 export function getEnv(): Env {
   if (!cached) {
-    cached = envSchema.parse(process.env);
+    if (!process.env.DATABASE_URL?.trim()) {
+      const built = databaseUrlFromParts(process.env);
+      if (built) process.env.DATABASE_URL = built;
+    }
+    const parsed = envSchema.safeParse(process.env);
+    if (!parsed.success) {
+      throw new Error(
+        "Database is not configured. In Vercel set DATABASE_URL, or set DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, and DB_NAME, then redeploy.",
+      );
+    }
+    cached = parsed.data;
   }
   return cached;
 }
