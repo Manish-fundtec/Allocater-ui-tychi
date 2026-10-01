@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "dev:api": "npm run dev --prefix backend",
+    "build:api": "npm run build --prefix backend",
+    "start:api": "npm run start --prefix backend"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.11",
