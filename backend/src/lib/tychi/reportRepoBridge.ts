@@ -1,3 +1,4 @@
+import fs from "fs";
 import { createRequire } from "module";
 import path from "path";
 
@@ -45,10 +46,16 @@ function ensureTychiDbEnv(): void {
 }
 
 function tychiBackendRoot(): string {
-  if (process.env.TYCHI_BACKEND_ROOT) {
-    return path.resolve(process.cwd(), process.env.TYCHI_BACKEND_ROOT);
-  }
-  return path.resolve(process.cwd(), "..", "..", "Tychi-2.0-backend-git");
+  const candidates = [
+    process.env.TYCHI_BACKEND_ROOT,
+    path.join("..", "Tychi-2.0-backend-git"),
+    path.join("..", "..", "Tychi-2.0-backend-git"),
+  ].filter((value): value is string => Boolean(value));
+  const resolved = candidates.map((value) => path.resolve(process.cwd(), value));
+  return (
+    resolved.find((dir) => fs.existsSync(path.join(dir, "package.json"))) ??
+    resolved[0]
+  );
 }
 
 export function loadPlSnapshotModule(): PlSnapshotModule {

@@ -1,13 +1,16 @@
 import type { NextConfig } from "next";
 
-const apiBaseUrl =
-  process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, "") ??
-  "http://localhost:4000";
-
 const nextConfig: NextConfig = {
   turbopack: {
     root: process.cwd(),
   },
+  serverExternalPackages: [
+    "pg",
+    "pg-hstore",
+    "sequelize",
+    "winston",
+    "nodemailer",
+  ],
   async redirects() {
     return [
       {
@@ -56,16 +59,6 @@ const nextConfig: NextConfig = {
         permanent: false,
       },
     ];
-  },
-  async rewrites() {
-    return {
-      beforeFiles: [
-        {
-          source: "/api/:path*",
-          destination: `${apiBaseUrl}/api/:path*`,
-        },
-      ],
-    };
   },
 };
 
