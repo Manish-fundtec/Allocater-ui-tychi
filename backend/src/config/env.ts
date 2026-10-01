@@ -19,10 +19,12 @@ const envSchema = z.object({
   NODE_ENV: z
     .enum(["development", "production", "test"])
     .default("development"),
+  // Auth is still a stub (any bearer/cookie is accepted). Unset means the
+  // dashboard can load. Set DEV_AUTH_BYPASS=false once a real session exists.
   DEV_AUTH_BYPASS: z
     .string()
-    .optional()
-    .transform((v) => v === "true"),
+    .default("true")
+    .transform((v) => v !== "false"),
   TYCHI_API_BASE_URL: z.string().optional(),
   TYCHI_API_KEY: z.string().optional(),
   EMAIL_FROM: z.string().default("noreply@fundtec.io"),
